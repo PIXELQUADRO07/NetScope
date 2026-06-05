@@ -4,97 +4,166 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>NetScope</title>
-    <!-- Tailwind Play CDN for rapid prototyping -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/style.css">
   </head>
-  <body class="bg-gradient-to-b from-slate-900 to-slate-800 text-slate-100">
-    <div id="app">
-      <nav class="max-w-5xl mx-auto p-4 flex gap-4 items-center">
-        <router-link to="/" class="text-slate-200 hover:text-white">Home</router-link>
-        <router-link to="/history" class="text-slate-200 hover:text-white">History</router-link>
-      </nav>
+  <body class="min-h-screen bg-black text-emerald-100">
+    <div id="app" class="min-h-screen">
+      <header class="sticky top-0 z-30 border-b border-emerald-500/10 bg-black/90 backdrop-blur-sm">
+        <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.35em] text-emerald-400">NetScope</p>
+            <h1 class="mt-2 text-3xl font-semibold tracking-tight text-emerald-100">{{ t('dashboardTitle') }}</h1>
+            <p class="mt-2 max-w-2xl text-sm text-emerald-200">{{ t('dashboardDescription') }}</p>
+          </div>
+          <nav class="flex flex-wrap items-center gap-2">
+            <router-link to="/" class="rounded-full px-4 py-2 text-sm font-semibold transition text-slate-300 hover:text-emerald-200" active-class="bg-emerald-500 text-slate-950">{{ t('navHome') }}</router-link>
+            <router-link to="/history" class="rounded-full px-4 py-2 text-sm font-semibold transition text-slate-300 hover:text-emerald-200" active-class="bg-emerald-500 text-slate-950">{{ t('navHistory') }}</router-link>
+          </nav>
+        </div>
+      </header>
 
-      <div class="max-w-5xl mx-auto p-6">
+      <main class="mx-auto max-w-6xl px-4 py-8">
         <router-view></router-view>
-      </div>
+      </main>
+
+      <footer class="mx-auto max-w-6xl px-4 py-6 text-sm text-slate-500">
+        {{ t('footerText') }}
+      </footer>
     </div>
 
-    <!-- Templates -->
     <script type="text/x-template" id="home">
-      <div>
-        <header class="mb-6">
-          <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-500">NetScope</h1>
-          <p class="text-slate-300">Interfaccia web per la scansione e il reporting</p>
-        </header>
-
-        <main class="space-y-5">
-          <section class="bg-slate-900/60 p-5 rounded-lg shadow-lg hover:shadow-xl transition">
-            <h2 class="text-lg font-semibold">Scansione Locale</h2>
-            <div class="flex gap-3 items-center mt-3">
-              <label class="flex items-center gap-2">Concurrency
-                <input v-model.number="localConcurrency" type="number" min="1" class="ml-2 w-24 rounded-md px-2 py-1 bg-slate-800 border border-slate-700" />
-              </label>
-              <button @click="localScan" class="px-3 py-1 rounded-md bg-gradient-to-b from-blue-500 to-indigo-600">Scan</button>
-              <span v-if="localLoading" class="inline-flex items-center gap-2 text-sm text-slate-300">
-                <svg class="w-5 h-5 animate-spin text-sky-400" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" class="opacity-75"/></svg>
-                Scanning...
-              </span>
+      <div class="space-y-8">
+        <section class="grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
+          <div class="rounded-[2rem] border border-emerald-500/10 bg-black/70 p-6 shadow-[0_35px_120px_-70px_rgba(16,185,129,0.4)]">
+            <div class="space-y-4">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm uppercase tracking-[0.35em] text-emerald-300">{{ t('welcomeTitle') }}</p>
+                  <h2 class="mt-3 text-3xl font-semibold text-white">{{ t('welcomeDescription') }}</h2>
+                </div>
+                <div class="grid gap-2 rounded-3xl border border-emerald-500/20 bg-black/80 p-4 text-emerald-200">
+                  <label class="text-xs uppercase tracking-[0.35em] text-emerald-300">{{ t('languageLabel') }}</label>
+                  <select v-model="selectedLanguage" @change="saveLanguage" class="rounded-3xl border border-emerald-500/20 bg-black/80 px-4 py-3 text-emerald-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20">
+                    <option v-for="lang in languageOptions" :key="lang.code" :value="lang.code">{{ lang.label }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="rounded-3xl border border-emerald-500/10 bg-black/70 p-5">
+                  <p class="text-sm text-emerald-300">{{ t('history') }}</p>
+                  <p class="mt-3 text-3xl font-semibold text-emerald-100">{{ historyCount }}</p>
+                </div>
+                <div class="rounded-3xl border border-emerald-500/10 bg-black/70 p-5">
+                  <p class="text-sm text-emerald-300">{{ t('resultsLabel') }}</p>
+                  <p class="mt-3 text-2xl font-semibold text-emerald-100">{{ lastAction || t('noResult') }}</p>
+                </div>
+              </div>
             </div>
-            <pre v-if="localResult" class="mt-3 bg-black/30 p-3 rounded text-sm overflow-auto max-h-48">{{ pretty(localResult) }}</pre>
-          </section>
-
-          <section class="bg-slate-900/60 p-5 rounded-lg shadow-lg hover:shadow-xl transition">
-            <h2 class="text-lg font-semibold">Reverse DNS</h2>
-            <div class="flex gap-3 items-center mt-3">
-              <input v-model="revIP" placeholder="8.8.8.8" class="rounded-md px-2 py-1 bg-slate-800 border border-slate-700" />
-              <button @click="reverseLookup" class="px-3 py-1 rounded-md bg-gradient-to-b from-emerald-500 to-green-600">Lookup</button>
-              <span v-if="revLoading" class="inline-flex items-center gap-2 text-sm text-slate-300">
-                <svg class="w-5 h-5 animate-spin text-green-300" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" class="opacity-75"/></svg>
-                Looking up...
-              </span>
+          </div>
+          <div class="rounded-[2rem] border border-emerald-500/10 bg-black/80 p-6 shadow-[0_35px_120px_-70px_rgba(16,185,129,0.3)]">
+            <p class="text-sm uppercase tracking-[0.35em] text-emerald-300">{{ t('quickActions') }}</p>
+            <div class="mt-6 space-y-3">
+              <button @click="publicScan" class="w-full rounded-3xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400">{{ t('scanNow') }}</button>
+              <button @click="historyClick" class="w-full rounded-3xl bg-emerald-800 px-5 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-700">{{ t('history') }}</button>
             </div>
-            <pre v-if="revResult" class="mt-3 bg-black/30 p-3 rounded text-sm overflow-auto max-h-48">{{ pretty(revResult) }}</pre>
-          </section>
+          </div>
+        </section>
 
-          <section class="bg-slate-900/60 p-5 rounded-lg shadow-lg hover:shadow-xl transition">
-            <h2 class="text-lg font-semibold">SSL Certificate</h2>
-            <div class="flex gap-3 items-center mt-3">
-              <input v-model="sslHost" placeholder="example.com" class="rounded-md px-2 py-1 bg-slate-800 border border-slate-700" />
-              <input v-model="sslPort" placeholder="443" class="w-20 rounded-md px-2 py-1 bg-slate-800 border border-slate-700" />
-              <button @click="getSSL" class="px-3 py-1 rounded-md bg-gradient-to-b from-pink-500 to-rose-600">Get Cert</button>
-              <span v-if="sslLoading" class="inline-flex items-center gap-2 text-sm text-slate-300">
-                <svg class="w-5 h-5 animate-spin text-pink-300" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" class="opacity-75"/></svg>
-                Fetching...
-              </span>
+        <section class="rounded-[2rem] border border-emerald-500/10 bg-black/80 p-6 shadow-[0_35px_120px_-70px_rgba(16,185,129,0.2)]">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h3 class="text-2xl font-semibold text-white">{{ t('publicDatabaseTitle') }}</h3>
+              <p class="mt-2 text-slate-400">{{ t('publicDatabaseDescription') }}</p>
             </div>
-            <pre v-if="sslResult" class="mt-3 bg-black/30 p-3 rounded text-sm overflow-auto max-h-48">{{ pretty(sslResult) }}</pre>
-          </section>
-        </main>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="text-sm text-emerald-300">{{ t('limitLabel') }}</label>
+                <input v-model.number="publicLimit" type="number" min="1" max="200" class="mt-2 w-full rounded-3xl border border-emerald-500/20 bg-black/80 px-4 py-3 text-emerald-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+              </div>
+              <div>
+                <label class="text-sm text-emerald-300">{{ t('countryLabel') }}</label>
+                <input v-model="publicCountry" :placeholder="t('countryExample')" class="mt-2 w-full rounded-3xl border border-emerald-500/20 bg-black/80 px-4 py-3 text-emerald-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid gap-4">
+            <input v-model="publicQuery" :placeholder="t('searchPlaceholder')" class="w-full rounded-[2rem] border border-emerald-500/20 bg-black/80 px-5 py-4 text-emerald-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20" />
+            <div class="grid gap-4 lg:grid-cols-[1fr_1fr]">
+              <div>
+                <label class="text-sm text-slate-400">{{ t('filterLabel') }}</label>
+                <select v-model="publicFilter" class="mt-2 w-full rounded-3xl border border-emerald-500/20 bg-black/80 px-4 py-3 text-emerald-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20">
+                  <option value="webcam">{{ t('webcamOption') }}</option>
+                  <option value="telecamere">{{ t('telecamereOption') }}</option>
+                  <option value="os">{{ t('osOption') }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-sm text-slate-400">{{ t('sourceLabel') }}</label>
+                <select v-model="selectedPublicSource" class="mt-2 w-full rounded-3xl border border-emerald-500/20 bg-black/80 px-4 py-3 text-emerald-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20">
+                  <option v-for="source in publicSources" :key="source.id" :value="source.id">
+                    {{ source.name }} - {{ source.configured ? t('configured') : t('requireApiKey') }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-3xl border border-emerald-500/10 bg-black/80 p-5">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-400">{{ t('resultsLabel') }}</span>
+              <div class="spinner" :class="{ 'show': publicLoading }"></div>
+            </div>
+            <div v-if="publicResult && publicResult.error" class="mt-4 rounded-3xl border border-rose-500 bg-rose-950/20 p-4 text-sm text-rose-200">
+              <pre class="result show">{{ pretty(publicResult) }}</pre>
+            </div>
+            <div v-else-if="publicResult && publicResult.hosts && publicResult.hosts.length" class="mt-4 grid gap-3">
+              <div class="text-sm text-slate-400">{{ publicResult.count }} {{ t('hostsLabel') }} - {{ publicResult.source || selectedPublicSource }}</div>
+              <div class="rounded-3xl border border-emerald-500/20 bg-black/90 p-4" v-for="host in publicResult.hosts" :key="host">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="font-semibold text-white">{{ host }}</span>
+                  <span class="text-xs uppercase tracking-[0.35em] text-slate-500">{{ publicResult.source || selectedPublicSource }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="mt-4 text-sm text-slate-500">{{ t('noResult') }}</div>
+          </div>
+        </section>
       </div>
     </script>
 
     <script type="text/x-template" id="history">
-      <div>
-        <h2 class="text-xl font-semibold mb-3">Scan History</h2>
-        <div class="mb-3">
-          <button @click="clearHistory" class="px-3 py-1 rounded bg-red-600 text-white">Clear History</button>
-        </div>
-        <div v-if="entries.length===0" class="text-slate-400">No history yet.</div>
-        <ul class="space-y-3">
-          <li v-for="(e,idx) in entries" :key="e.ts" class="bg-slate-900/50 p-3 rounded">
-            <div class="flex justify-between items-start gap-3">
-              <div>
-                <div class="text-sm text-slate-300">{{ formatTS(e.ts) }} — <strong class="capitalize">{{ e.type }}</strong></div>
-                <pre class="text-xs mt-2 bg-black/20 p-2 rounded max-h-40 overflow-auto">{{ pretty(e) }}</pre>
-              </div>
+      <div class="space-y-6">
+        <div class="rounded-[2rem] border border-emerald-500/10 bg-black/80 p-6 shadow-[0_35px_120px_-70px_rgba(16,185,129,0.15)]">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm uppercase tracking-[0.35em] text-emerald-300">{{ t('history') }}</p>
+              <h2 class="mt-2 text-3xl font-semibold text-white">{{ t('historyTitle') }}</h2>
+              <p class="mt-3 text-slate-400">{{ t('historyDescription') }}</p>
             </div>
-          </li>
-        </ul>
+            <button @click="clearHistory" class="rounded-3xl bg-rose-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-rose-400">{{ t('historyClear') }}</button>
+          </div>
+
+        <div v-if="entries.length === 0" class="rounded-[2rem] border border-dashed border-emerald-500/20 bg-black/80 p-8 text-center text-emerald-300">
+          {{ t('historyEmpty') }}
+        </div>
+
+        <div class="grid gap-4">
+          <div v-for="entry in entries" :key="entry.ts" class="rounded-[2rem] border border-emerald-500/10 bg-black/80 p-5 shadow-[0_28px_90px_-60px_rgba(15,23,42,0.8)]">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-slate-400">{{ formatTS(entry.ts) }}</p>
+                <p class="mt-1 text-xl font-semibold text-white capitalize">{{ entry.type }}</p>
+              </div>
+              <span class="inline-flex rounded-full bg-black/80 px-4 py-2 text-sm text-emerald-200">{{ t('paramsPrefix') }}: {{ entry.params ? JSON.stringify(entry.params) : t('none') }}</span>
+            </div>
+            <pre class="mt-4 overflow-auto rounded-3xl bg-black/80 p-4 text-sm text-emerald-200">{{ pretty(entry.result) }}</pre>
+          </div>
+        </div>
       </div>
     </script>
 
-    <!-- Vue and Router CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/vue-router@4"></script>
     <script src="/static/app.js"></script>

@@ -51,15 +51,36 @@ Open `http://localhost:8080` in a browser.
 
 A minimal `docker-compose.yml` has been included for convenience. It builds the application and runs it in `web` mode.
 
+This compose file now loads container environment variables from a local `.env` file, so Docker picks up your API keys automatically.
+
 ```bash
 # Build and start the service
-SCANNER_API_KEY=your-secret docker compose up --build
+docker compose up --build
 
 # Stop and remove
 docker compose down
 ```
 
 If your environment uses the legacy `docker-compose` binary, replace `docker compose` with `docker-compose` in the commands above.
+
+### Automatic API key setup
+
+Use the new setup wizard to create `.env` and optionally add exports to your shell startup file:
+
+```bash
+./setup_api_keys.sh
+```
+
+This script will prompt for:
+
+- `SHODAN_API_KEY`
+- `CENSYS_ID`
+- `CENSYS_SECRET`
+- optional `SCANNER_API_KEY`
+
+> Note: Shodan requests may return `403 Forbidden` if your API key is missing, invalid, expired, or does not have access to the requested search endpoint.
+
+After setup, Docker Compose will automatically load `.env` and your shell can source the values from the file or from your shell rc.
 
 ### Single-command Docker launch
 

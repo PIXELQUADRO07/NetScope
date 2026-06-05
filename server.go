@@ -60,7 +60,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleStatic(w http.ResponseWriter, r *http.Request) {
-	path := "web" + r.URL.Path
+	path := "web" + strings.TrimPrefix(r.URL.Path, "/static")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		http.NotFound(w, r)
 		return
@@ -185,11 +185,152 @@ func handleAPICustom(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, res)
 }
 
+type PublicSource struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Configured  bool   `json:"configured"`
+}
+
+func getPublicSources() []PublicSource {
+	return []PublicSource{
+		{
+			ID:          "auto",
+			Name:        "Automatico",
+			Description: "Seleziona automaticamente il provider pubblico disponibile",
+			Configured:  os.Getenv("SHODAN_API_KEY") != "" || (os.Getenv("CENSYS_ID") != "" && os.Getenv("CENSYS_SECRET") != ""),
+		},
+		{
+			ID:          "shodan",
+			Name:        "Shodan",
+			Description: "Ricerca IP pubblici basata su Shodan",
+			Configured:  os.Getenv("SHODAN_API_KEY") != "",
+		},
+		{
+			ID:          "censys",
+			Name:        "Censys",
+			Description: "Ricerca IP pubblici basata su Censys",
+			Configured:  os.Getenv("CENSYS_ID") != "" && os.Getenv("CENSYS_SECRET") != "",
+		},
+		{
+			ID:          "local",
+			Name:        "Rete locale",
+			Description: "Scansione nella rete locale con filtri disponibili",
+			Configured:  true,
+		},
+	}
+}
+
+func buildPublicQuery(source, filter, country, query string) string {
+	query = strings.TrimSpace(query)
+	filter = strings.TrimSpace(filter)
+	country = strings.TrimSpace(country)
+
+	if filter != "" {
+		if query != "" {
+			query = fmt.Sprintf("%s %s", query, filter)
+		} else {
+			query = filter
+		}
+	}
+
+	if country != "" {
+		country = strings.ToUpper(country)
+		countryField := "country"
+		if source == "censys" {
+			countryField = "location.country"
+		}
+		if query != "" {
+			query = fmt.Sprintf("%s %s:%s", query, countryField, country)
+		} else {
+			query = fmt.Sprintf("%s:%s", countryField, country)
+		}
+	}
+
+	return strings.TrimSpace(query)
+}
+
+func handleAPIPublicSources(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, getPublicSources())
+}
+
+func handleAPIPublicScan(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	source := q.Get("source")
+	filter := q.Get("filter")
+	country := q.Get("country")
+	query := q.Get("query")
+	limit := 50
+	if v := q.Get("limit"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			limit = n
+		}
+	}
+	concurrency := 0
+	if v := q.Get("concurrency"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			concurrency = n
+		}
+	}
+	if concurrency == 0 {
+		hw, _ := DetectHardware()
+		concurrency = hw.MaxRecommended
+	}
+
+	if source == "" {
+		source = "auto"
+	}
+
+	if source == "auto" {
+		if os.Getenv("SHODAN_API_KEY") != "" {
+			source = "shodan"
+		} else if os.Getenv("CENSYS_ID") != "" && os.Getenv("CENSYS_SECRET") != "" {
+			source = "censys"
+		} else {
+			source = "local"
+		}
+	}
+
+	searchQuery := buildPublicQuery(source, filter, country, query)
+	if searchQuery == "" {
+		searchQuery = "webcam"
+	}
+
+	var hosts []string
+	var err error
+
+	switch source {
+	case "shodan":
+		hosts, err = SearchShodan(searchQuery, os.Getenv("SHODAN_API_KEY"), limit)
+	case "censys":
+		hosts, err = SearchCensys(searchQuery, os.Getenv("CENSYS_ID"), os.Getenv("CENSYS_SECRET"), limit)
+	case "local":
+		hosts, err = ScanLocalNetwork(concurrency)
+		if err == nil && len(hosts) > limit {
+			hosts = hosts[:limit]
+		}
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		writeJSON(w, map[string]string{"error": "source sconosciuta"})
+		return
+	}
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		writeJSON(w, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, map[string]interface{}{"hosts": hosts, "count": len(hosts), "source": source, "query": searchQuery, "limit": limit})
+}
+
 func StartWebServer(addr string) error {
 	http.HandleFunc("/", handleIndex)
 	http.HandleFunc("/static/", handleStatic)
 	http.HandleFunc("/api/scan/local", apiMiddleware(handleAPILocalScan))
 	http.HandleFunc("/api/scan/asn", apiMiddleware(handleAPIASNScan))
+	http.HandleFunc("/api/scan/public", apiMiddleware(handleAPIPublicScan))
+	http.HandleFunc("/api/sources", apiMiddleware(handleAPIPublicSources))
 	http.HandleFunc("/api/reverse", apiMiddleware(handleAPIReverse))
 	http.HandleFunc("/api/ssl", apiMiddleware(handleAPISSL))
 	http.HandleFunc("/api/custom", apiMiddleware(handleAPICustom))

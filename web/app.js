@@ -1,23 +1,470 @@
-document.getElementById('btn-rev').addEventListener('click', doReverse)
-document.getElementById('btn-ssl').addEventListener('click', doSSL)
 const { createApp } = Vue
-const { createRouter, createWebHistory } = VueRouter
+const { createRouter, createWebHashHistory } = VueRouter
 
-// helper for history persistence
 function pushHistory(entry){
-  try{
+  try {
     const key = 'scan_history'
     const raw = localStorage.getItem(key)
     const arr = raw ? JSON.parse(raw) : []
     arr.unshift(entry)
-    // keep last 100
-    localStorage.setItem(key, JSON.stringify(arr.slice(0,100)))
-  }catch(e){ console.warn('history push failed', e) }
+    localStorage.setItem(key, JSON.stringify(arr.slice(0, 100)))
+  } catch (e) {
+    console.warn('history push failed', e)
+  }
+}
+
+const i18nMixin = {
+  data() {
+    return {
+      languageOptions: [
+        { code: 'en', label: 'English' },
+        { code: 'it', label: 'Italiano' },
+        { code: 'es', label: 'Español' },
+        { code: 'fr', label: 'Français' },
+        { code: 'de', label: 'Deutsch' },
+        { code: 'pt', label: 'Português' },
+        { code: 'ru', label: 'Русский' },
+        { code: 'zh', label: '中文' },
+        { code: 'ja', label: '日本語' },
+        { code: 'ar', label: 'العربية' },
+        { code: 'nl', label: 'Nederlands' },
+        { code: 'pl', label: 'Polski' },
+      ],
+      selectedLanguage: 'it',
+      translations: {
+        en: {
+          welcomeTitle: 'NetScope Search',
+          welcomeDescription: 'Search public IPs like Shodan and filter by cameras, countries, and OS.',
+          searchPlaceholder: 'Search query, e.g. webcam port:80',
+          searchButton: 'Search public hosts',
+          sourceLabel: 'Provider',
+          filterLabel: 'Filter',
+          countryLabel: 'Country (e.g. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Max IPs',
+          languageLabel: 'Language',
+          resultsLabel: 'Search results',
+          noResult: 'No results yet. Start a search.',
+          history: 'History',
+          localScan: 'Local scan',
+          reverseDNS: 'Reverse DNS',
+          sslCert: 'SSL Certificate',
+          scanNow: 'Scan now',
+          configured: 'Configured',
+          requireApiKey: 'Requires API key',
+          autoProvider: 'Automatic public provider',
+          dashboardTitle: 'NetScope Search Dashboard',
+          dashboardDescription: 'Run public scans and inspect cameras, countries, OS, and history from one place.',
+          footerText: 'Lightweight web interface for NetScope. Use history to review actions.',
+          historyTitle: 'Recent activity',
+          historyDescription: 'Actions are saved locally in the browser and persist until cleared.',
+          historyClear: 'Clear history',
+          hostsLabel: 'hosts',
+          historyEmpty: 'No history entries yet. Run a scan to generate results.',
+          paramsPrefix: 'Params',
+          none: 'none',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Cameras',
+          osOption: 'Operating systems',
+          quickActions: 'Quick actions',
+          navHome: 'Home',
+          navHistory: 'History',
+          publicDatabaseTitle: 'Public search',
+          publicDatabaseDescription: 'Search public sources for cameras, locations, and operating systems.',
+        },
+        it: {
+          welcomeTitle: 'Ricerca NetScope',
+          welcomeDescription: 'Cerca IP pubblici come Shodan e filtra per webcam, nazioni e sistemi operativi.',
+          searchPlaceholder: 'Query di ricerca, ad es. webcam port:80',
+          searchButton: 'Cerca host pubblici',
+          sourceLabel: 'Provider',
+          filterLabel: 'Filtro',
+          countryLabel: 'Nazione (es. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Max IP',
+          languageLabel: 'Lingua',
+          resultsLabel: 'Risultati di ricerca',
+          noResult: 'Nessun risultato ancora. Avvia una ricerca.',
+          history: 'Cronologia',
+          localScan: 'Scan locale',
+          reverseDNS: 'DNS inverso',
+          sslCert: 'Certificato SSL',
+          scanNow: 'Ricerca',
+          configured: 'Configurata',
+          requireApiKey: 'Richiede chiavi API',
+          autoProvider: 'Provider pubblico automatico',
+          dashboardTitle: 'Dashboard NetScope',
+          dashboardDescription: 'Esegui ricerche pubbliche e analizza webcam, paesi, OS e cronologia in un unico posto.',
+          footerText: 'Interfaccia web leggera per NetScope. Usa la cronologia per rivedere le azioni.',
+          historyTitle: 'Attività recente',
+          historyDescription: 'Le azioni vengono salvate localmente nel browser e rimangono finché non le cancelli.',
+          historyClear: 'Cancella cronologia',
+          hostsLabel: 'host',
+          historyEmpty: 'Nessuna voce nella cronologia. Esegui una scansione per generare risultati.',
+          paramsPrefix: 'Parametri',
+          none: 'nessuno',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Telecamere',
+          osOption: 'Sistemi operativi',
+          quickActions: 'Azioni rapide',
+          navHome: 'Home',
+          navHistory: 'Cronologia',
+          publicDatabaseTitle: 'Ricerca pubblica',
+          publicDatabaseDescription: 'Cerca sorgenti pubbliche per webcam, paesi e sistemi operativi.',
+        },
+        es: {
+          welcomeTitle: 'Búsqueda NetScope',
+          welcomeDescription: 'Busca IP públicos como Shodan y filtra por cámaras, países y sistemas.',
+          searchPlaceholder: 'Consulta de búsqueda, p.ej. webcam port:80',
+          searchButton: 'Buscar hosts públicos',
+          sourceLabel: 'Proveedor',
+          filterLabel: 'Filtro',
+          countryLabel: 'País (p.ej. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Límite IP',
+          languageLabel: 'Idioma',
+          resultsLabel: 'Resultados',
+          noResult: 'Aún no hay resultados. Inicia una búsqueda.',
+          history: 'Historial',
+          localScan: 'Escaneo local',
+          reverseDNS: 'DNS inverso',
+          sslCert: 'Certificado SSL',
+          scanNow: 'Buscar',
+          configured: 'Configurado',
+          requireApiKey: 'Requiere clave API',
+          autoProvider: 'Proveedor público automático',
+          dashboardTitle: 'Panel de NetScope',
+          dashboardDescription: 'Ejecuta búsquedas públicas y explora cámaras, países, OS y historial desde un solo lugar.',
+          footerText: 'Interfaz web liviana para NetScope. Usa el historial para revisar acciones.',
+          historyTitle: 'Actividad reciente',
+          historyDescription: 'Las acciones se guardan localmente en el navegador y permanecen hasta que las borras.',
+          historyClear: 'Borrar historial',
+          hostsLabel: 'hosts',
+          historyEmpty: 'No hay entradas de historial. Ejecuta una búsqueda para generar resultados.',
+          paramsPrefix: 'Parámetros',
+          none: 'ninguno',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Cámaras',
+          osOption: 'Sistemas operativos',
+          quickActions: 'Acciones rápidas',
+          navHome: 'Inicio',
+          navHistory: 'Historial',
+          publicDatabaseTitle: 'Búsqueda pública',
+          publicDatabaseDescription: 'Busca fuentes públicas de cámaras, ubicaciones y sistemas operativos.',
+        },
+        fr: {
+          welcomeTitle: 'Recherche NetScope',
+          welcomeDescription: 'Recherchez des IP publiques comme Shodan et filtrez par caméras, pays et OS.',
+          searchPlaceholder: 'Requête de recherche, ex. webcam port:80',
+          searchButton: 'Rechercher des hôtes publics',
+          sourceLabel: 'Fournisseur',
+          filterLabel: 'Filtre',
+          countryLabel: 'Pays (ex. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Limite IP',
+          languageLabel: 'Langue',
+          resultsLabel: 'Résultats',
+          noResult: 'Aucun résultat pour le moment. Lancez une recherche.',
+          history: 'Historique',
+          localScan: 'Scan local',
+          reverseDNS: 'DNS inverse',
+          sslCert: 'Certificat SSL',
+          scanNow: 'Rechercher',
+          configured: 'Configuré',
+          requireApiKey: 'Clé API requise',
+          autoProvider: 'Fournisseur public automatique',
+          dashboardTitle: 'Tableau NetScope',
+          dashboardDescription: 'Lancez des recherches publiques et consultez caméras, pays, OS et historique depuis un seul endroit.',
+          footerText: "Interface web légère pour NetScope. Utilisez l'historique pour revoir les actions.",
+          historyTitle: 'Activité récente',
+          historyDescription: "Les actions sont enregistrées localement dans le navigateur et persistent jusqu'à suppression.",
+          historyClear: "Effacer l'historique",          
+          hostsLabel: 'hôtes',
+          historyEmpty: "Aucune entrée d'historique. Lancez une recherche pour générer des résultats.",
+          paramsPrefix: 'Paramètres',
+          none: 'aucun',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Caméras',
+          osOption: "Systèmes d'exploitation",
+          quickActions: 'Actions rapides',
+          navHome: 'Accueil',
+          navHistory: 'Historique',
+          publicDatabaseTitle: 'Recherche publique',
+          publicDatabaseDescription: "Recherchez des sources publiques pour caméras, lieux et systèmes d’exploitation.",
+        },
+        de: {
+          welcomeTitle: 'NetScope Suche',
+          welcomeDescription: 'Durchsuche öffentliche IPs wie Shodan und filtere nach Kameras, Ländern und OS.',
+          searchPlaceholder: 'Suchanfrage z.B. webcam port:80',
+          searchButton: 'Öffentliche Hosts suchen',
+          sourceLabel: 'Anbieter',
+          filterLabel: 'Filter',
+          countryLabel: 'Land (z.B. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Max IPs',
+          languageLabel: 'Sprache',
+          resultsLabel: 'Ergebnisse',
+          noResult: 'Noch keine Ergebnisse. Starte eine Suche.',
+          history: 'Verlauf',
+          localScan: 'Lokaler Scan',
+          reverseDNS: 'Reverse DNS',
+          sslCert: 'SSL-Zertifikat',
+          scanNow: 'Suchen',
+          configured: 'Konfiguriert',
+          requireApiKey: 'API-Schlüssel erforderlich',
+          autoProvider: 'Automatischer öffentlicher Anbieter',
+          dashboardTitle: 'Öffentliche Suche',
+          dashboardDescription: 'Durchsuche öffentliche Quellen nach Kameras, Standorten und Betriebssystemen.',
+          footerText: 'Leichte Weboberfläche für NetScope. Verwende den Verlauf, um Aktionen zu überprüfen.',
+          historyTitle: 'Letzte Aktivitäten',
+          historyDescription: 'Aktionen werden lokal im Browser gespeichert und verbleiben dort, bis sie gelöscht werden.',
+          historyClear: 'Verlauf löschen',
+          hostsLabel: 'Hosts',
+          historyEmpty: 'Keine Verlaufs-Einträge. Führe eine Suche aus, um Ergebnisse zu generieren.',
+          paramsPrefix: 'Parameter',
+          none: 'keine',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Kameras',
+          osOption: 'Betriebssysteme',
+          quickActions: 'Schnellaktionen',
+          navHome: 'Start',
+          navHistory: 'Verlauf',
+          publicDatabaseTitle: 'Öffentliche Suche',
+          publicDatabaseDescription: 'Durchsuche öffentliche Quellen nach Kameras, Standorten und Betriebssystemen.',
+        },
+        pt: {
+          welcomeTitle: 'Pesquisa NetScope',
+          welcomeDescription: 'Busque IPs públicos como Shodan e filtre por câmeras, países e SO.',
+          searchPlaceholder: 'Consulta, ex. webcam port:80',
+          searchButton: 'Buscar hosts públicos',
+          sourceLabel: 'Provedor',
+          filterLabel: 'Filtro',
+          countryLabel: 'País (ex. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Limite IP',
+          languageLabel: 'Idioma',
+          resultsLabel: 'Resultados',
+          noResult: 'Ainda sem resultados. Inicie uma busca.',
+          history: 'Histórico',
+          localScan: 'Scanner local',
+          reverseDNS: 'DNS reverso',
+          sslCert: 'Certificado SSL',
+          scanNow: 'Buscar',
+          configured: 'Configurado',
+          requireApiKey: 'Requer chave API',
+          autoProvider: 'Provedor público automático',
+          dashboardTitle: 'Painel NetScope',
+          dashboardDescription: 'Execute buscas públicas e revise câmeras, países, SO e histórico em um único lugar.',
+          footerText: 'Interface web leve para NetScope. Use o histórico para revisar as ações.',
+          historyTitle: 'Atividade recente',
+          historyDescription: 'As ações são salvas localmente no navegador e permanecem até serem limpas.',
+          historyClear: 'Limpar histórico',
+          hostsLabel: 'hosts',
+          historyEmpty: 'Nenhuma entrada de histórico. Execute uma pesquisa para gerar resultados.',
+          paramsPrefix: 'Parâmetros',
+          none: 'nenhum',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Câmeras',
+          osOption: 'Sistemas operacionais',
+          quickActions: 'Ações rápidas',
+          navHome: 'Início',
+          navHistory: 'Histórico',
+          publicDatabaseTitle: 'Busca pública',
+          publicDatabaseDescription: 'Pesquise fontes públicas por câmeras, locais e sistemas operacionais.',
+        },
+        ru: {
+          welcomeTitle: 'Поиск NetScope',
+          welcomeDescription: 'Ищите публичные IP как в Shodan и фильтруйте по камерам, странам и ОС.',
+          searchPlaceholder: 'Запрос, например webcam port:80',
+          searchButton: 'Найти публичные хосты',
+          sourceLabel: 'Провайдер',
+          filterLabel: 'Фильтр',
+          countryLabel: 'Страна (например IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Макс IP',
+          languageLabel: 'Язык',
+          resultsLabel: 'Результаты',
+          noResult: 'Пока нет результатов. Запустите поиск.',
+          history: 'История',
+          localScan: 'Локальное сканирование',
+          reverseDNS: 'Обратный DNS',
+          sslCert: 'SSL сертификат',
+          scanNow: 'Поиск',
+          configured: 'Настроено',
+          requireApiKey: 'Требуется API ключ',
+          autoProvider: 'Автоматический публичный провайдер',
+          dashboardTitle: 'Панель NetScope',
+          dashboardDescription: 'Выполняйте публичные поиски и изучайте камеры, страны, ОС и историю в одном месте.',
+          footerText: 'Легкий веб-интерфейс для NetScope. Используйте историю для просмотра действий.',
+          historyTitle: 'Последние действия',
+          historyDescription: 'Действия сохраняются локально в браузере и остаются до очистки.',
+          historyClear: 'Очистить историю',
+          hostsLabel: 'хостов',
+          historyEmpty: 'Нет записей истории. Выполните поиск, чтобы получить результаты.',
+          paramsPrefix: 'Параметры',
+          none: 'нет',
+          webcamOption: 'Вебкамера',
+          telecamereOption: 'Камеры',
+          osOption: 'Операционные системы',
+          quickActions: 'Быстрые действия',
+          navHome: 'Домой',
+          navHistory: 'История',
+          publicDatabaseTitle: 'Публичный поиск',
+          publicDatabaseDescription: 'Ищите публичные источники камер, местоположения и операционных систем.',
+        },
+        zh: {
+          welcomeTitle: 'NetScope 搜索',
+          welcomeDescription: '像 Shodan 一样搜索公共 IP，并按摄像头、国家和系统过滤。',
+          searchPlaceholder: '搜索查询，例如 webcam port:80',
+          searchButton: '搜索公共主机',
+          sourceLabel: '提供者',
+          filterLabel: '过滤器',
+          countryLabel: '国家 (例如 IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'IP 限制',
+          languageLabel: '语言',
+          resultsLabel: '结果',
+          noResult: '尚无结果。开始搜索。',
+          history: '历史',
+          localScan: '本地扫描',
+          reverseDNS: '反向 DNS',
+          sslCert: 'SSL 证书',
+          scanNow: '搜索',
+          configured: '已配置',
+          requireApiKey: '需要 API 密钥',
+          autoProvider: '自动公共提供者',
+          dashboardTitle: 'NetScope 仪表板',
+          dashboardDescription: '运行公共扫描，检查摄像头、国家/地区、操作系统和历史记录。',
+          footerText: 'NetScope 的轻量级 Web 界面。使用历史记录查看操作。',
+          historyTitle: '最近活动',
+          historyDescription: '操作会保存在浏览器中，并在清除前保留。',
+          historyClear: '清除历史记录',
+          hostsLabel: '主机',
+          historyEmpty: '尚无历史记录项。运行扫描以生成结果。',
+          paramsPrefix: '参数',
+          none: '无',
+          webcamOption: '网络摄像头',
+          telecamereOption: '摄像头',
+          osOption: '操作系统',
+          quickActions: '快速操作',
+          navHome: '首页',
+          navHistory: '历史',
+          publicDatabaseTitle: '公共搜索',
+          publicDatabaseDescription: '搜索摄像头、位置和操作系统的公共来源。',
+        },
+        ja: {
+          welcomeTitle: 'NetScope 検索',
+          welcomeDescription: 'Shodan のように公開 IP を検索し、カメラ、国、OS でフィルタします。',
+          searchPlaceholder: '検索クエリ 例: webcam port:80',
+          searchButton: '公開ホストを検索',
+          sourceLabel: 'プロバイダー',
+          filterLabel: 'フィルター',
+          countryLabel: '国 (例 IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: '最大 IP',
+          languageLabel: '言語',
+          resultsLabel: '結果',
+          noResult: 'まだ結果がありません。検索を開始してください。',
+          history: '履歴',
+          localScan: 'ローカルスキャン',
+          reverseDNS: '逆引き DNS',
+          sslCert: 'SSL 証明書',
+          scanNow: '検索',
+          configured: '設定済み',
+          requireApiKey: 'API キーが必要',
+          autoProvider: '自動公開プロバイダー',
+          dashboardTitle: 'NetScope ダッシュボード',
+          dashboardDescription: '公開 IP の検索を実行し、カメラ、国、OS、履歴を確認します。',
+          footerText: 'NetScope の軽量 Web インターフェース。履歴で操作を確認できます。',
+          historyTitle: '最近のアクティビティ',
+          historyDescription: 'アクションはブラウザにローカル保存され、クリアされるまで保持されます。',
+          historyClear: '履歴をクリア',
+          hostsLabel: 'ホスト',
+          historyEmpty: '履歴がありません。スキャンを実行して結果を生成してください。',
+          paramsPrefix: 'パラメータ',
+          none: 'なし',
+          webcamOption: 'ウェブカメラ',
+          telecamereOption: 'カメラ',
+          osOption: 'オペレーティングシステム',
+          quickActions: 'クイックアクション',
+          navHome: 'ホーム',
+          navHistory: '履歴',
+          publicDatabaseTitle: '公開検索',
+          publicDatabaseDescription: 'カメラ、場所、OS の公開ソースを検索します。',
+        },
+        ar: {
+          welcomeTitle: 'بحث NetScope',
+          welcomeDescription: 'ابحث عن عناوين IP عامة مثل Shodan وقم بالتصفية حسب الكاميرات والبلدان ونظام التشغيل.',
+          searchPlaceholder: 'استعلام البحث، مثلاً webcam port:80',
+          searchButton: 'ابحث عن مضيفين عامين',
+          sourceLabel: 'المزوّد',
+          filterLabel: 'فلتر',
+          countryLabel: 'الدولة (مثلاً IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'حد IP',
+          languageLabel: 'اللغة',
+          resultsLabel: 'النتائج',
+          noResult: 'لا توجد نتائج بعد. ابدأ البحث.',
+          history: 'السجل',
+          localScan: 'فحص محلي',
+          reverseDNS: 'DNS عكسي',
+          sslCert: 'شهادة SSL',
+          scanNow: 'ابحث',
+          configured: 'مُعد',
+          requireApiKey: 'يتطلب مفتاح API',
+          autoProvider: 'المزود العام التلقائي',
+          dashboardTitle: 'لوحة NetScope',
+          dashboardDescription: 'قم بإجراء عمليات بحث عامة واستعرض الكاميرات والبلدان ونظام التشغيل والسجل في مكان واحد.',
+          footerText: 'واجهة ويب خفيفة الوزن لـ NetScope. استخدم السجل لمراجعة الإجراءات.',
+          historyTitle: 'النشاط الأخير',
+          historyDescription: 'يتم حفظ الإجراءات محليًا في المتصفح وتستمر حتى يتم مسحها.',
+          historyClear: 'مسح السجل',
+          hostsLabel: 'المضيفين',
+          historyEmpty: 'لا توجد سجلات محفوظة. قم بتشغيل بحث لإنشاء النتائج.',
+          paramsPrefix: 'المعلمات',
+          none: 'لا شيء',
+          webcamOption: 'كاميرا ويب',
+          telecamereOption: 'كاميرات',
+          osOption: 'أنظمة التشغيل',
+          quickActions: 'إجراءات سريعة',
+          navHome: 'الرئيسية',
+          navHistory: 'السجل',
+          publicDatabaseTitle: 'البحث العام',
+          publicDatabaseDescription: 'ابحث في المصادر العامة عن الكاميرات والمواقع وأنظمة التشغيل.',
+        },
+      },
+    }
+  },
+  methods: {
+    detectBrowserLanguage() {
+      const lang = navigator.language ? navigator.language.slice(0, 2) : 'en'
+      return this.languageOptions.find((l) => l.code === lang) ? lang : 'en'
+    },
+    restoreLanguage() {
+      const saved = localStorage.getItem('netscope_lang')
+      if (saved && this.languageOptions.find((l) => l.code === saved)) {
+        this.selectedLanguage = saved
+      } else {
+        this.selectedLanguage = this.detectBrowserLanguage()
+      }
+    },
+    t(key) {
+      const lang = this.selectedLanguage || 'en'
+      return (this.translations[lang] && this.translations[lang][key]) || this.translations['en'][key] || key
+    },
+    saveLanguage() {
+      localStorage.setItem('netscope_lang', this.selectedLanguage)
+    },
+  },
+  mounted() {
+    this.restoreLanguage()
+  },
 }
 
 const Home = {
   template: '#home',
-  data(){
+  mixins: [i18nMixin],
+  data() {
     return {
       localConcurrency: 20,
       localLoading: false,
@@ -29,70 +476,626 @@ const Home = {
       sslPort: '443',
       sslLoading: false,
       sslResult: null,
+      publicSources: [],
+      selectedPublicSource: 'auto',
+      publicQuery: '',
+      publicFilter: 'webcam',
+      publicCountry: '',
+      publicLimit: 50,
+      publicLoading: false,
+      publicResult: null,
+      historyCount: 0,
+      lastAction: '',
     }
   },
-  methods:{
-    pretty(v){ try{ return JSON.stringify(v, null, 2) }catch(e){ return String(v) } },
-    async localScan(){
+  template: '#home',
+  data() {
+    return {
+        localConcurrency: 20,
+      localLoading: false,
+      localResult: null,
+      revIP: '',
+      revLoading: false,
+      revResult: null,
+      sslHost: '',
+      sslPort: '443',
+      sslLoading: false,
+      sslResult: null,
+      publicSources: [],
+      selectedPublicSource: 'auto',
+      publicQuery: '',
+      publicFilter: 'webcam',
+      publicCountry: '',
+      publicLimit: 50,
+      publicLoading: false,
+      publicResult: null,
+      languageOptions: [
+        { code: 'en', label: 'English' },
+        { code: 'it', label: 'Italiano' },
+        { code: 'es', label: 'Español' },
+        { code: 'fr', label: 'Français' },
+        { code: 'de', label: 'Deutsch' },
+        { code: 'pt', label: 'Português' },
+        { code: 'ru', label: 'Русский' },
+        { code: 'zh', label: '中文' },
+        { code: 'ja', label: '日本語' },
+        { code: 'ar', label: 'العربية' },
+        { code: 'nl', label: 'Nederlands' },
+        { code: 'pl', label: 'Polski' },
+      ],
+      selectedLanguage: 'it',
+      translations: {
+        en: {
+          welcomeTitle: 'NetScope Search',
+          welcomeDescription: 'Search public IPs like Shodan and filter by cameras, countries, and OS.',
+          searchPlaceholder: 'Search query, e.g. webcam port:80',
+          searchButton: 'Search public hosts',
+          sourceLabel: 'Provider',
+          filterLabel: 'Filter',
+          countryLabel: 'Country (e.g. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Max IPs',
+          languageLabel: 'Language',
+          resultsLabel: 'Search results',
+          noResult: 'No results yet. Start a search.',
+          history: 'History',
+          localScan: 'Local scan',
+          reverseDNS: 'Reverse DNS',
+          sslCert: 'SSL Certificate',
+          scanNow: 'Scan now',
+          configured: 'Configured',
+          requireApiKey: 'Requires API key',
+          autoProvider: 'Automatic public provider',
+          dashboardTitle: 'NetScope Search Dashboard',
+          dashboardDescription: 'Run public scans and inspect cameras, countries, OS, and history from one place.',
+          footerText: 'Lightweight web interface for NetScope. Use history to review actions.',
+          historyTitle: 'Recent activity',
+          historyDescription: 'Actions are saved locally in the browser and persist until cleared.',
+          historyClear: 'Clear history',
+          hostsLabel: 'hosts',
+          historyEmpty: 'No history entries yet. Run a scan to generate results.',
+          paramsPrefix: 'Params',
+          none: 'none',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Cameras',
+          osOption: 'Operating systems',
+          quickActions: 'Quick actions',
+          navHome: 'Home',
+          navHistory: 'History',
+          publicDatabaseTitle: 'Public search',
+          publicDatabaseDescription: 'Search public sources for cameras, locations, and operating systems.',
+        },
+        it: {
+          welcomeTitle: 'Ricerca NetScope',
+          welcomeDescription: 'Cerca IP pubblici come Shodan e filtra per webcam, nazioni e sistemi operativi.',
+          searchPlaceholder: 'Query di ricerca, ad es. webcam port:80',
+          searchButton: 'Cerca host pubblici',
+          sourceLabel: 'Provider',
+          filterLabel: 'Filtro',
+          countryLabel: 'Nazione (es. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Max IP',
+          languageLabel: 'Lingua',
+          resultsLabel: 'Risultati di ricerca',
+          noResult: 'Nessun risultato ancora. Avvia una ricerca.',
+          history: 'Cronologia',
+          localScan: 'Scan locale',
+          reverseDNS: 'DNS inverso',
+          sslCert: 'Certificato SSL',
+          scanNow: 'Ricerca',
+          configured: 'Configurata',
+          requireApiKey: 'Richiede chiavi API',
+          autoProvider: 'Provider pubblico automatico',
+          dashboardTitle: 'Dashboard NetScope',
+          dashboardDescription: 'Esegui ricerche pubbliche e analizza webcam, paesi, OS e cronologia in un unico posto.',
+          footerText: 'Interfaccia web leggera per NetScope. Usa la cronologia per rivedere le azioni.',
+          historyTitle: 'Attività recente',
+          historyDescription: 'Le azioni vengono salvate localmente nel browser e rimangono finché non le cancelli.',
+          historyClear: 'Cancella cronologia',
+          hostsLabel: 'host',
+          historyEmpty: 'Nessuna voce nella cronologia. Esegui una scansione per generare risultati.',
+          paramsPrefix: 'Parametri',
+          none: 'nessuno',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Telecamere',
+          osOption: 'Sistemi operativi',
+          quickActions: 'Azioni rapide',
+          navHome: 'Home',
+          navHistory: 'Cronologia',
+          publicDatabaseTitle: 'Ricerca pubblica',
+          publicDatabaseDescription: 'Cerca sorgenti pubbliche per webcam, paesi e sistemi operativi.',
+        },
+        es: {
+          welcomeTitle: 'Búsqueda NetScope',
+          welcomeDescription: 'Busca IP públicos como Shodan y filtra por cámaras, países y sistemas.',
+          searchPlaceholder: 'Consulta de búsqueda, p.ej. webcam port:80',
+          searchButton: 'Buscar hosts públicos',
+          sourceLabel: 'Proveedor',
+          filterLabel: 'Filtro',
+          countryLabel: 'País (p.ej. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Límite IP',
+          languageLabel: 'Idioma',
+          resultsLabel: 'Resultados',
+          noResult: 'Aún no hay resultados. Inicia una búsqueda.',
+          history: 'Historial',
+          localScan: 'Escaneo local',
+          reverseDNS: 'DNS inverso',
+          sslCert: 'Certificado SSL',
+          scanNow: 'Buscar',
+          configured: 'Configurado',
+          requireApiKey: 'Requiere clave API',
+          autoProvider: 'Proveedor público automático',
+          dashboardTitle: 'Panel de NetScope',
+          dashboardDescription: 'Ejecuta búsquedas públicas y explora cámaras, países, OS y historial desde un solo lugar.',
+          footerText: 'Interfaz web liviana para NetScope. Usa el historial para revisar acciones.',
+          historyTitle: 'Actividad reciente',
+          historyDescription: 'Las acciones se guardan localmente en el navegador y permanecen hasta que las borras.',
+          historyClear: 'Borrar historial',
+          hostsLabel: 'hosts',
+          historyEmpty: 'No hay entradas de historial. Ejecuta una búsqueda para generar resultados.',
+          paramsPrefix: 'Parámetros',
+          none: 'ninguno',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Cámaras',
+          osOption: 'Sistemas operativos',
+          quickActions: 'Acciones rápidas',
+          navHome: 'Inicio',
+          navHistory: 'Historial',
+          publicDatabaseTitle: 'Búsqueda pública',
+          publicDatabaseDescription: 'Busca fuentes públicas de cámaras, ubicaciones y sistemas operativos.',
+        },
+        fr: {
+          welcomeTitle: 'Recherche NetScope',
+          welcomeDescription: 'Recherchez des IP publiques comme Shodan et filtrez par caméras, pays et OS.',
+          searchPlaceholder: 'Requête de recherche, ex. webcam port:80',
+          searchButton: 'Rechercher des hôtes publics',
+          sourceLabel: 'Fournisseur',
+          filterLabel: 'Filtre',
+          countryLabel: 'Pays (ex. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Limite IP',
+          languageLabel: 'Langue',
+          resultsLabel: 'Résultats',
+          noResult: 'Aucun résultat pour le moment. Lancez une recherche.',
+          history: 'Historique',
+          localScan: 'Scan local',
+          reverseDNS: 'DNS inverse',
+          sslCert: 'Certificat SSL',
+          scanNow: 'Rechercher',
+          configured: 'Configuré',
+          requireApiKey: 'Clé API requise',
+          autoProvider: 'Fournisseur public automatique',
+          dashboardTitle: 'Tableau NetScope',
+          dashboardDescription: 'Lancez des recherches publiques et consultez caméras, pays, OS et historique depuis un seul endroit.',
+          footerText: "Interface web légère pour NetScope. Utilisez l'historique pour revoir les actions.",
+          historyTitle: 'Activité récente',
+          historyDescription: "Les actions sont enregistrées localement dans le navigateur et persistent jusqu'à suppression.",
+          historyClear: "Effacer l'historique",
+          hostsLabel: 'hôtes',
+          historyEmpty: "Aucune entrée d'historique. Lancez une recherche pour générer des résultats.",
+          paramsPrefix: 'Paramètres',
+          none: 'aucun',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Caméras',
+          osOption: "Systèmes d'exploitation",
+          quickActions: 'Actions rapides',
+          navHome: 'Accueil',
+          navHistory: 'Historique',
+          publicDatabaseTitle: 'Recherche publique',
+          publicDatabaseDescription: "Recherchez des sources publiques pour caméras, lieux et systèmes d’exploitation.",
+        },
+        de: {
+          welcomeTitle: 'NetScope Suche',
+          welcomeDescription: 'Durchsuche öffentliche IPs wie Shodan und filtere nach Kameras, Ländern und OS.',
+          searchPlaceholder: 'Suchanfrage z.B. webcam port:80',
+          searchButton: 'Öffentliche Hosts suchen',
+          sourceLabel: 'Anbieter',
+          filterLabel: 'Filter',
+          countryLabel: 'Land (z.B. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Max IPs',
+          languageLabel: 'Sprache',
+          resultsLabel: 'Ergebnisse',
+          noResult: 'Noch keine Ergebnisse. Starte eine Suche.',
+          history: 'Verlauf',
+          localScan: 'Lokaler Scan',
+          reverseDNS: 'Reverse DNS',
+          sslCert: 'SSL-Zertifikat',
+          scanNow: 'Suchen',
+          configured: 'Konfiguriert',
+          requireApiKey: 'API-Schlüssel erforderlich',
+          autoProvider: 'Automatischer öffentlicher Anbieter',
+          dashboardTitle: 'NetScope Dashboard',
+          dashboardDescription: 'Führe öffentliche Suchanfragen aus und durchsuche Kameras, Länder, OS und Verlauf an einem Ort.',
+          footerText: 'Leichte Weboberfläche für NetScope. Verwende den Verlauf, um Aktionen zu überprüfen.',
+          historyTitle: 'Letzte Aktivitäten',
+          historyDescription: 'Aktionen werden lokal im Browser gespeichert und verbleiben dort, bis sie gelöscht werden.',
+          historyClear: 'Verlauf löschen',
+          hostsLabel: 'Hosts',
+          historyEmpty: 'Keine Verlaufs-Einträge. Führe eine Suche aus, um Ergebnisse zu generieren.',
+          paramsPrefix: 'Parameter',
+          none: 'keine',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Kameras',
+          osOption: 'Betriebssysteme',
+          quickActions: 'Schnellaktionen',
+          navHome: 'Start',
+          navHistory: 'Verlauf',
+          publicDatabaseTitle: 'Öffentliche Suche',
+          publicDatabaseDescription: 'Durchsuche öffentliche Quellen nach Kameras, Standorten und Betriebssystemen.',
+        },
+        pt: {
+          welcomeTitle: 'Pesquisa NetScope',
+          welcomeDescription: 'Busque IPs públicos como Shodan e filtre por câmeras, países e SO.',
+          searchPlaceholder: 'Consulta, ex. webcam port:80',
+          searchButton: 'Buscar hosts públicos',
+          sourceLabel: 'Provedor',
+          filterLabel: 'Filtro',
+          countryLabel: 'País (ex. IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Limite IP',
+          languageLabel: 'Idioma',
+          resultsLabel: 'Resultados',
+          noResult: 'Ainda sem resultados. Inicie uma busca.',
+          history: 'Histórico',
+          localScan: 'Scanner local',
+          reverseDNS: 'DNS reverso',
+          sslCert: 'Certificado SSL',
+          scanNow: 'Buscar',
+          configured: 'Configurado',
+          requireApiKey: 'Requer chave API',
+          autoProvider: 'Provedor público automático',
+          dashboardTitle: 'Painel NetScope',
+          dashboardDescription: 'Execute buscas públicas e revise câmeras, países, SO e histórico em um único lugar.',
+          footerText: 'Interface web leve para NetScope. Use o histórico para revisar as ações.',
+          historyTitle: 'Atividade recente',
+          historyDescription: 'As ações são salvas localmente no navegador e permanecem até serem limpas.',
+          historyClear: 'Limpar histórico',
+          hostsLabel: 'hosts',
+          historyEmpty: 'Nenhuma entrada de histórico. Execute uma pesquisa para gerar resultados.',
+          paramsPrefix: 'Parâmetros',
+          none: 'nenhum',
+          webcamOption: 'Webcam',
+          telecamereOption: 'Câmeras',
+          osOption: 'Sistemas operacionais',
+          quickActions: 'Ações rápidas',
+          navHome: 'Início',
+          navHistory: 'Histórico',
+          publicDatabaseTitle: 'Busca pública',
+          publicDatabaseDescription: 'Pesquise fontes públicas por câmeras, locais e sistemas operacionais.',
+        },
+        ru: {
+          welcomeTitle: 'Поиск NetScope',
+          welcomeDescription: 'Ищите публичные IP как в Shodan и фильтруйте по камерам, странам и ОС.',
+          searchPlaceholder: 'Запрос, например webcam port:80',
+          searchButton: 'Найти публичные хосты',
+          sourceLabel: 'Провайдер',
+          filterLabel: 'Фильтр',
+          countryLabel: 'Страна (например IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'Макс IP',
+          languageLabel: 'Язык',
+          resultsLabel: 'Результаты',
+          noResult: 'Пока нет результатов. Запустите поиск.',
+          history: 'История',
+          localScan: 'Локальное сканирование',
+          reverseDNS: 'Обратный DNS',
+          sslCert: 'SSL сертификат',
+          scanNow: 'Поиск',
+          configured: 'Настроено',
+          requireApiKey: 'Требуется API ключ',
+          autoProvider: 'Автоматический публичный провайдер',
+          dashboardTitle: 'Панель NetScope',
+          dashboardDescription: 'Выполняйте публичные поиски и изучайте камеры, страны, ОС и историю в одном месте.',
+          footerText: 'Легкий веб-интерфейс для NetScope. Используйте историю для просмотра действий.',
+          historyTitle: 'Последние действия',
+          historyDescription: 'Действия сохраняются локально в браузере и остаются до очистки.',
+          historyClear: 'Очистить историю',
+          hostsLabel: 'хостов',
+          historyEmpty: 'Нет записей истории. Выполните поиск, чтобы получить результаты.',
+          paramsPrefix: 'Параметры',
+          none: 'нет',
+          webcamOption: 'Вебкамера',
+          telecamereOption: 'Камеры',
+          osOption: 'Операционные системы',
+          quickActions: 'Быстрые действия',
+          navHome: 'Домой',
+          navHistory: 'История',
+          publicDatabaseTitle: 'Публичный поиск',
+          publicDatabaseDescription: 'Ищите публичные источники камер, местоположения и операционных систем.',
+        },
+        zh: {
+          welcomeTitle: 'NetScope 搜索',
+          welcomeDescription: '像 Shodan 一样搜索公共 IP，并按摄像头、国家和系统过滤。',
+          searchPlaceholder: '搜索查询，例如 webcam port:80',
+          searchButton: '搜索公共主机',
+          sourceLabel: '提供者',
+          filterLabel: '过滤器',
+          countryLabel: '国家 (例如 IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'IP 限制',
+          languageLabel: '语言',
+          resultsLabel: '结果',
+          noResult: '尚无结果。开始搜索。',
+          history: '历史',
+          localScan: '本地扫描',
+          reverseDNS: '反向 DNS',
+          sslCert: 'SSL 证书',
+          scanNow: '搜索',
+          configured: '已配置',
+          requireApiKey: '需要 API 密钥',
+          autoProvider: '自动公共提供者',
+          dashboardTitle: 'NetScope 仪表板',
+          dashboardDescription: '运行公共扫描，检查摄像头、国家/地区、操作系统和历史记录。',
+          footerText: 'NetScope 的轻量级 Web 界面。使用历史记录查看操作。',
+          historyTitle: '最近活动',
+          historyDescription: '操作会保存在浏览器中，并在清除前保留。',
+          historyClear: '清除历史记录',
+          hostsLabel: '主机',
+          historyEmpty: '尚无历史记录项。运行扫描以生成结果。',
+          paramsPrefix: '参数',
+          none: '无',
+          webcamOption: '网络摄像头',
+          telecamereOption: '摄像头',
+          osOption: '操作系统',
+          quickActions: '快速操作',
+          navHome: '首页',
+          navHistory: '历史',
+          publicDatabaseTitle: '公共搜索',
+          publicDatabaseDescription: '搜索摄像头、位置和操作系统的公共来源。',
+        },
+        ja: {
+          welcomeTitle: 'NetScope 検索',
+          welcomeDescription: 'Shodan のように公開 IP を検索し、カメラ、国、OS でフィルタします。',
+          searchPlaceholder: '検索クエリ 例: webcam port:80',
+          searchButton: '公開ホストを検索',
+          sourceLabel: 'プロバイダー',
+          filterLabel: 'フィルター',
+          countryLabel: '国 (例 IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: '最大 IP',
+          languageLabel: '言語',
+          resultsLabel: '結果',
+          noResult: 'まだ結果がありません。検索を開始してください。',
+          history: '履歴',
+          localScan: 'ローカルスキャン',
+          reverseDNS: '逆引き DNS',
+          sslCert: 'SSL 証明書',
+          scanNow: '検索',
+          configured: '設定済み',
+          requireApiKey: 'API キーが必要',
+          autoProvider: '自動公開プロバイダー',
+          dashboardTitle: 'NetScope ダッシュボード',
+          dashboardDescription: '公開 IP の検索を実行し、カメラ、国、OS、履歴を確認します。',
+          footerText: 'NetScope の軽量 Web インターフェース。履歴で操作を確認できます。',
+          historyTitle: '最近のアクティビティ',
+          historyDescription: 'アクションはブラウザにローカル保存され、クリアされるまで保持されます。',
+          historyClear: '履歴をクリア',
+          hostsLabel: 'ホスト',
+          historyEmpty: '履歴がありません。スキャンを実行して結果を生成してください。',
+          paramsPrefix: 'パラメータ',
+          none: 'なし',
+          webcamOption: 'ウェブカメラ',
+          telecamereOption: 'カメラ',
+          osOption: 'オペレーティングシステム',
+        },
+        ar: {
+          welcomeTitle: 'بحث NetScope',
+          welcomeDescription: 'ابحث عن عناوين IP عامة مثل Shodan وقم بالتصفية حسب الكاميرات والبلدان ونظام التشغيل.',
+          searchPlaceholder: 'استعلام البحث، مثلاً webcam port:80',
+          searchButton: 'ابحث عن مضيفين عامين',
+          sourceLabel: 'المزوّد',
+          filterLabel: 'فلتر',
+          countryLabel: 'الدولة (مثلاً IT, US)',
+          countryExample: 'IT, US, FR',
+          limitLabel: 'حد IP',
+          languageLabel: 'اللغة',
+          resultsLabel: 'النتائج',
+          noResult: 'لا توجد نتائج بعد. ابدأ البحث.',
+          history: 'السجل',
+          localScan: 'فحص محلي',
+          reverseDNS: 'DNS عكسي',
+          sslCert: 'شهادة SSL',
+          scanNow: 'ابحث',
+          configured: 'مُعد',
+          requireApiKey: 'يتطلب مفتاح API',
+          autoProvider: 'المزود العام التلقائي',
+          dashboardTitle: 'لوحة NetScope',
+          dashboardDescription: 'قم بإجراء عمليات بحث عامة واستعرض الكاميرات والبلدان ونظام التشغيل والسجل في مكان واحد.',
+          footerText: 'واجهة ويب خفيفة الوزن لـ NetScope. استخدم السجل لمراجعة الإجراءات.',
+          historyTitle: 'النشاط الأخير',
+          historyDescription: 'يتم حفظ الإجراءات محليًا في المتصفح وتستمر حتى يتم مسحها.',
+          historyClear: 'مسح السجل',
+          hostsLabel: 'المضيفين',
+          historyEmpty: 'لا توجد سجلات محفوظة. قم بتشغيل بحث لإنشاء النتائج.',
+          paramsPrefix: 'المعلمات',
+          none: 'لا شيء',
+          webcamOption: 'كاميرا ويب',
+          telecamereOption: 'كاميرات',
+          osOption: 'أنظمة التشغيل',
+          quickActions: 'إجراءات سريعة',
+          navHome: 'الرئيسية',
+          navHistory: 'السجل',
+          publicDatabaseTitle: 'البحث العام',
+          publicDatabaseDescription: 'ابحث في المصادر العامة عن الكاميرات والمواقع وأنظمة التشغيل.',
+        },
+      },
+      historyCount: 0,
+      lastAction: '',
+    }
+  },
+  methods: {
+    pretty(v) {
+      try {
+        return JSON.stringify(v, null, 2)
+      } catch (e) {
+        return String(v)
+      }
+    },
+    detectBrowserLanguage() {
+      const lang = navigator.language ? navigator.language.slice(0, 2) : 'en'
+      return this.languageOptions.find((l) => l.code === lang) ? lang : 'en'
+    },
+    restoreLanguage() {
+      const saved = localStorage.getItem('netscope_lang')
+      if (saved && this.languageOptions.find((l) => l.code === saved)) {
+        this.selectedLanguage = saved
+      } else {
+        this.selectedLanguage = this.detectBrowserLanguage()
+      }
+    },
+    t(key) {
+      const lang = this.selectedLanguage || 'en'
+      return (this.translations[lang] && this.translations[lang][key]) || this.translations['en'][key] || key
+    },
+    saveLanguage() {
+      localStorage.setItem('netscope_lang', this.selectedLanguage)
+    },
+    async fetchSources() {
+      try {
+        const res = await fetch('/api/sources')
+        this.publicSources = await res.json()
+        if (!this.publicSources.find((s) => s.id === this.selectedPublicSource) && this.publicSources.length > 0) {
+          this.selectedPublicSource = this.publicSources[0].id
+        }
+      } catch (e) {
+        console.warn('Impossibile recuperare le sorgenti pubbliche', e)
+      }
+    },
+    updateHistoryState() {
+      try {
+        const raw = localStorage.getItem('scan_history')
+        const arr = raw ? JSON.parse(raw) : []
+        this.historyCount = arr.length
+        this.lastAction = arr.length > 0 ? arr[0].type : ''
+      } catch (e) {
+        this.historyCount = 0
+        this.lastAction = ''
+      }
+    },
+    pushHistoryWithState(entry) {
+      pushHistory(entry)
+      this.updateHistoryState()
+    },
+    async localScan() {
       this.localLoading = true
       this.localResult = null
-      try{
+      try {
         const res = await fetch(`/api/scan/local?concurrency=${this.localConcurrency}`)
         this.localResult = await res.json()
-        pushHistory({ ts: Date.now(), type: 'local', params: { concurrency: this.localConcurrency }, result: this.localResult })
-      }catch(e){ this.localResult = { error: String(e) } }
-      finally{ this.localLoading = false }
+        this.pushHistoryWithState({ ts: Date.now(), type: 'local', params: { concurrency: this.localConcurrency }, result: this.localResult })
+      } catch (e) {
+        this.localResult = { error: String(e) }
+      } finally {
+        this.localLoading = false
+      }
     },
-    async reverseLookup(){
-      if(!this.revIP) return
+    async reverseLookup() {
+      if (!this.revIP) return
       this.revLoading = true
       this.revResult = null
-      try{
+      try {
         const res = await fetch(`/api/reverse?ip=${encodeURIComponent(this.revIP)}`)
         this.revResult = await res.json()
-        pushHistory({ ts: Date.now(), type: 'reverse', params: { ip: this.revIP }, result: this.revResult })
-      }catch(e){ this.revResult = { error: String(e) } }
-      finally{ this.revLoading = false }
+        this.pushHistoryWithState({ ts: Date.now(), type: 'reverse', params: { ip: this.revIP }, result: this.revResult })
+      } catch (e) {
+        this.revResult = { error: String(e) }
+      } finally {
+        this.revLoading = false
+      }
     },
-    async getSSL(){
-      if(!this.sslHost) return
+    async publicScan() {
+      this.publicLoading = true
+      this.publicResult = null
+      try {
+        const params = new URLSearchParams()
+        params.set('source', this.selectedPublicSource)
+        if (this.publicFilter) params.set('filter', this.publicFilter)
+        if (this.publicCountry) params.set('country', this.publicCountry)
+        if (this.publicQuery) params.set('query', this.publicQuery)
+        params.set('limit', this.publicLimit)
+        params.set('concurrency', this.localConcurrency)
+
+        const res = await fetch(`/api/scan/public?${params.toString()}`)
+        this.publicResult = await res.json()
+        this.pushHistoryWithState({ ts: Date.now(), type: 'public', params: { source: this.selectedPublicSource, filter: this.publicFilter, country: this.publicCountry, query: this.publicQuery, limit: this.publicLimit }, result: this.publicResult })
+      } catch (e) {
+        this.publicResult = { error: String(e) }
+      } finally {
+        this.publicLoading = false
+      }
+    },
+    async getSSL() {
+      if (!this.sslHost) return
       this.sslLoading = true
       this.sslResult = null
-      try{
+      try {
         const res = await fetch(`/api/ssl?host=${encodeURIComponent(this.sslHost)}&port=${encodeURIComponent(this.sslPort)}`)
         this.sslResult = await res.json()
-        pushHistory({ ts: Date.now(), type: 'ssl', params: { host: this.sslHost, port: this.sslPort }, result: this.sslResult })
-      }catch(e){ this.sslResult = { error: String(e) } }
-      finally{ this.sslLoading = false }
-    }
-  }
+        this.pushHistoryWithState({ ts: Date.now(), type: 'ssl', params: { host: this.sslHost, port: this.sslPort }, result: this.sslResult })
+      } catch (e) {
+        this.sslResult = { error: String(e) }
+      } finally {
+        this.sslLoading = false
+      }
+    },
+    historyClick() {
+      this.$router.push('/history')
+    },
+  },
+  mounted() {
+    this.restoreLanguage()
+    this.updateHistoryState()
+    this.fetchSources()
+  },
 }
 
 const History = {
   template: '#history',
-  data(){ return { entries: [] } },
-  methods:{
-    load(){
-      try{
+  mixins: [i18nMixin],
+  data() {
+    return {
+      entries: [],
+    }
+  },
+  methods: {
+    load() {
+      try {
         const raw = localStorage.getItem('scan_history')
         this.entries = raw ? JSON.parse(raw) : []
-      }catch(e){ this.entries = [] }
+      } catch (e) {
+        this.entries = []
+      }
     },
-    clearHistory(){
+    clearHistory() {
       localStorage.removeItem('scan_history')
       this.entries = []
     },
-    pretty(v){ try{ return JSON.stringify(v, null, 2) }catch(e){ return String(v) } },
-    formatTS(ts){ return new Date(ts).toLocaleString() }
+    pretty(v) {
+      try {
+        return JSON.stringify(v, null, 2)
+      } catch (e) {
+        return String(v)
+      }
+    },
+    formatTS(ts) {
+      return new Date(ts).toLocaleString()
+    },
   },
-  mounted(){ this.load() }
+  mounted() {
+    this.restoreLanguage()
+    this.load()
+  },
 }
 
 const routes = [
   { path: '/', component: Home },
-  { path: '/history', component: History }
+  { path: '/history', component: History },
 ]
 
-const router = createRouter({ history: createWebHistory(), routes })
+const router = createRouter({ history: createWebHashHistory(), routes })
 
-createApp({}).use(router).mount('#app')
+createApp({
+  mixins: [i18nMixin],
+}).use(router).mount('#app')
