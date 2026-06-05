@@ -1,0 +1,20 @@
+{
+  "general": {
+    "log_level": "info",
+    "log_file": "",
+    "save_results": false,
+    "results_format": "json"
+  },
+  "osint": {
+    "shodan_api_key": "",
+    "ipinfo_token": "",
+    "censys_id": "",
+    "censys_secret": ""
+  },
+  "scanner": {
+    "default_concurrency": 20,
+    "max_concurrent": 100,
+    "timeout_tcp": 500,
+    "timeout_icmp": 1000
+  }
+}

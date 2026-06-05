@@ -1,0 +1,56 @@
+# Binaries for programs and plugins
+/netscope
+/scanner_web
+
+# Build directories
+/bin/
+/obj/
+/pkg/
+
+# Go workspace
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Dependency directories (remove the comment below to include vendor if used)
+/vendor/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# Node / frontend
+node_modules/
+/dist/
+/build/
+
+# Logs
+*.log
+logs/
+
+# Cache and local data
+.cache/
+.cache
+web/.vite/
+
+# Docker
+docker-compose.override.yml
+
+# Misc
+coverage.out
+
+# Persistent cache used by the app
+cache/

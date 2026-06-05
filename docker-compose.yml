@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  scanner:
+    build: .
+    image: netscope:latest
+    command: ["web", ":8080"]
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    volumes:
+      - ./cache:/app/cache
+    environment:
+      - TZ=UTC
